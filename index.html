@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaromyr Landar - Профессиональное портфолио</title>
+    <!-- Подключаем Tailwind CSS для стилей -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключаем шрифт Inter с Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+    <!-- Подключаем Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Подключаем GSAP и ScrollTrigger для продвинутых анимаций -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- Подключаем Three.js для 3D-графики -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Подключаем Typewriter-js для эффекта печатающегося текста -->
+    <script src="https://unpkg.com/typewriter-js@2.19.0/dist/core.js"></script>
+
+    <style>
+        :root {
+            /* Обновленная палитра: темный серый стал черным, черный стал темно-серым */
+            --bg-light: #f0f0f0; /* Светлый фон */
+            --text-dark: #333333; /* Темно-серый текст */
+            --accent-main: #000000; /* Чёрный для акцента */
+            --accent-glow: #6b6b6b; /* Светло-серый для свечения */
+            --accent-highlight: #ffffff; /* Контрастный белый для заголовка */
+            --card-bg: #ffffff; /* Белый фон для карточек */
+            --header-bg: #222222; /* Темно-серый фон для хедера */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* Канвас для технологичного фона */
+        #hero-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -2;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Стили для заголовков с акцентным свечением */
+        .professional-text-glow {
+            color: var(--accent-main);
+            position: relative;
+        }
+        .professional-text-glow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            text-shadow: 0 0 5px var(--accent-main), 0 0 10px var(--accent-glow);
+            opacity: 0.4;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Стили для заголовка Hero-секции */
+        #hero-title {
+            color: var(--text-dark);
+            text-shadow: none;
+        }
+
+        /* Прелоадер */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #preloader.fade-out {
+            opacity: 0;
+        }
+            
+        /* Стили для Typewriter-js */
+        .Typewriter__cursor {
+            color: var(--accent-main);
+        }
+
+        /* Стили для иконок технологий */
+        .tech-icon-container {
+            transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+        }
+
+        .tech-icon-container:hover {
+            transform: translateY(-5px) scale(1.1);
+            filter: drop-shadow(0 0 10px var(--accent-glow)); /* Обновленный цвет свечения */
+        }
+
+        /* Анимация карточек при скролле */
+        .card-animation-target {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        /* Стили для карточек портфолио */
+        .portfolio-card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            transition: all 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .portfolio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); /* Тень в цвет акцента */
+        }
+
+        .portfolio-card img {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .portfolio-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .portfolio-card-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.8); /* var(--accent-main) с прозрачностью */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .portfolio-card:hover .portfolio-card-overlay {
+            opacity: 1;
+        }
+
+        /* Стиль для кнопки копирования */
+        .copy-btn {
+            background-color: var(--accent-main);
+            color: white;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            border-radius: 9999px; /* full rounded */
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+        /* Стили для кнопок-ссылок языка */
+        .lang-button {
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease-in-out;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            display: inline-block; /* Для корректного отображения padding */
+            text-decoration: none; /* Убираем подчеркивание у ссылок */
+        }
+        .lang-button.active {
+            background-color: var(--accent-main);
+            color: var(--accent-highlight);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="text-[var(--text-dark)] text-4xl font-bold animate-pulse">Loading...</div>
+    </div>
+
+    <!-- 3D-канвас для фона -->
+    <canvas id="hero-canvas"></canvas>
+
+    <!-- Header and Navigation -->
+    <header class="fixed top-0 left-0 w-full z-50 p-6 flex justify-between items-center bg-[var(--header-bg)]">
+        <a href="#home" class="text-3xl font-black text-[var(--accent-highlight)] hover:text-[var(--accent-glow)] transition-colors">OOUPSS</a>
+        <nav class="flex items-center space-x-6">
+            <ul class="flex space-x-6">
+                <li><a href="#about" class="text-white text-lg hover:text-[var(--accent-glow)] transition-colors">About Me</a></li>
+                <li><a href="#portfolio" class="text-white text-lg hover:text-[var(--accent-glow)] transition-colors">Portfolio</a></li>
+                <li><a href="#contact" class="text-white text-lg hover:text-[var(--accent-glow)] transition-colors">Contact Me</a></li>
+            </ul>
+            <div class="flex space-x-2">
+                <!-- Кнопки заменены на ссылки-заглушки -->
+                <a href="rus.html" class="lang-button">RU</a>
+                <a href="index.html" class="lang-button active">EN</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Главный экран (Hero Section) -->
+    <main>
+        <section id="home" class="relative min-h-screen flex items-center justify-center text-center p-4">
+            <div class="z-10 flex flex-col items-center gap-8">
+                <h1 id="hero-title" class="text-6xl sm:text-8xl lg:text-9xl font-extrabold tracking-tight" style="font-family: 'Inter', sans-serif;">
+                    Yaromyr Landar
+                </h1>
+                <div class="text-xl sm:text-2xl font-light max-w-4xl mt-4 text-[var(--text-dark)]" id="typewriter-text">
+                </div>
+                <a href="#contact" class="mt-8 px-8 py-4 bg-[var(--accent-main)] text-white text-lg font-bold rounded-full shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,0,0,0.6)]">
+                    Contact Me
+                </a>
+            </div>
+        </section>
+
+        <!-- Секция "Обо мне" -->
+        <section id="about" class="bg-[var(--bg-light)] py-24">
+            <div class="container mx-auto p-4 md:p-8">
+                <h2 class="text-5xl font-black text-center mb-16 professional-text-glow">About Me</h2>
+                <div class="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                    <div class="card-animation-target relative bg-[var(--card-bg)] p-8 rounded-3xl shadow-2xl">
+                        <h3 class="text-3xl font-bold mb-4 text-[var(--accent-main)]">Experience and Education</h3>
+                        <p class="text-[var(--text-dark)] leading-relaxed text-lg mb-6">
+                            My journey in IT began with a passion for technology, which evolved into a professional passion. Since 2020, I have been actively diving into development, focusing on Python and Backend systems.
+                        </p>
+                        <ul class="list-none space-y-4 text-sm">
+                            <li><span class="font-bold text-[var(--text-dark)]">Professional Experience:</span> 06.2022 – Present: Developer in a Python Team – Game and Software Development.</li>
+                            <li><span class="font-bold text-[var(--text-dark)]">Education:</span></li>
+                            <ul class="list-disc ml-6 space-y-1">
+                                <li>09.2020 – 06.2024: Software Development, College of Information Technology, Kyiv.</li>
+                            </ul>
+                            <li><span class="font-bold text-[var(--text-dark)]">Additional Education:</span></li>
+                            <ul class="list-disc ml-6 space-y-1">
+                                <li>09.12.2024 – 29.08.2025: Python Backend Developer + AI, IT Career Hub, Berlin (online).</li>
+                                <li>03.2023 – 03.2024: Youth Integration Course B1, Volkshochschule "Die Brücke", Neuwied.</li>
+                                <li>04.2022 – 06.2022: Integration Course, Saint Martin's Gymnasium, Linz.</li>
+                                <li>09.2020 – 02.2022: English Language Courses, English Prime, Kyiv.</li>
+                                <li>06.2019 – 07.2019: Introduction to IT and Game Development. Game Development for Phones (Pocket Code), Introduction to Programming Basics.</li>
+                                <li>09.2018 – 05.2019: English Language Courses, Green School, Kyiv.</li>
+                            </ul>
+                            <li><span class="font-bold text-[var(--text-dark)]">Secondary Education:</span></li>
+                            <ul class="list-disc ml-6 space-y-1">
+                                <li>09.2011 – 05.2020: School No. 170, Kyiv.</li>
+                            </ul>
+                            <li><span class="font-bold text-[var(--text-dark)]">Special Skills:</span> English B1 and German B1.</li>
+                        </ul>
+                    </div>
+                    <div class="card-animation-target relative bg-[var(--card-bg)] p-8 rounded-3xl shadow-2xl">
+                        <h3 class="text-3xl font-bold mb-4 text-[var(--accent-main)]">Technologies and Skills</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                            <!-- Начало обновленного блока с иконками -->
+                            <a href="https://en.wikipedia.org/wiki/Python_(programming_language)" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fab fa-python text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Python</p>
+                            </a>
+                            <a href="https://www.cloudflare.com/learning/cloud/what-is-the-cloud" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-cloud text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Cloud</p>
+                            </a>
+                            <a href="https://cloud.google.com/learn/what-is-artificial-intelligence" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-robot text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">AI Integration</p>
+                            </a>
+                            <a href="https://en.wikipedia.org/wiki/Machine_learning" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-brain text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Machine Learning</p>
+                            </a>
+                            <a href="https://www.gluo.mx/en-US/blog/backend-que-es-y-para-que-sirve" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-server text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Backend</p>
+                            </a>
+                            <a href="https://docs.github.com/en/get-started/start-your-journey/about-github-and-git" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fab fa-github text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Git & GitHub</p>
+                            </a>
+                            <a href="https://www.ibm.com/think/topics/cybersecurity" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-shield-alt text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Cybersecurity</p>
+                            </a>
+                            <a href="https://www.linux.com/what-is-linux" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fab fa-linux text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Linux</p>
+                            </a>
+                            <a href="https://en.wikipedia.org/wiki/Qt_(software)" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-desktop text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Qt</p>
+                            </a>
+                            <a href="https://www.renpy.org" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fas fa-gamepad text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Ren'Py</p>
+                            </a>
+                            <a href="https://discord.com/safety/360044149331-what-is-discord" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fab fa-discord text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">Discord Server</p>
+                            </a>
+                            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="text-center tech-icon-container">
+                                <i class="fab fa-youtube text-5xl mb-2 text-[var(--text-dark)]"></i>
+                                <p class="font-bold text-lg text-[var(--text-dark)]">YouTube Edit</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция "Портфолио" (обновленная) -->
+        <section id="portfolio" class="bg-[var(--bg-light)] py-24">
+            <div class="container mx-auto p-4 md:p-8">
+                <h2 class="text-5xl font-black text-center mb-16 professional-text-glow">Portfolio</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto grid-flow-row-dense">
+                    <!-- Проект 1: OOUPSSram — Ultimate System Optimizer -->
+                    <div class="card-animation-target portfolio-card col-span-1 sm:col-span-1 row-span-2">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/oupseng.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/600x800/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта по разработке игр" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">OOUPSSram — Ultimate System Optimizer</h3>
+                            <a href="https://github.com/OOUPSS/OOUPSSram_eng" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Проект 2: The Raven -->
+                    <div class="card-animation-target portfolio-card col-span-1 sm:col-span-1">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/The%20ravenp.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта с интеграцией ИИ" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">The Raven is a dark fantasy visual novel.</h3>
+                            <a href="https://github.com/OOUPSS/The-Raven" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Проект 3: OOUPSSmail -->
+                    <div class="card-animation-target portfolio-card col-span-1 sm:col-span-1">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/screenshot.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта Backend API" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">OOUPSSmail - app for generating thousands of Gmail aliases</h3>
+                            <a href="https://github.com/OOUPSS/OOUPSSmail" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Проект 4: SmartHomeIdea -->
+                    <div class="card-animation-target portfolio-card col-span-1 sm:col-span-1">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/demo.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта по кибербезопасности" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">SmartHomeIdea - idea for a smart home panel</h3>
+                            <a href="https://github.com/OOUPSS/SmartHomeIdea" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Проект 5: Шаблон для сайта по поиску фильмов -->
+                    <div class="card-animation-target portfolio-card col-span-1 sm:col-span-1">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/mov.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта на Qt" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">Movie Search Website Template</h3>
+                            <a href="https://github.com/OOUPSS/OOUPSS_FILM" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Проект 6 (Новый, горизонтальный) -->
+                    <div class="card-animation-target portfolio-card col-span-full">
+                        <img src="https://github.com/OOUPSS/OOUPSSportfolio/blob/main/images/Log.png?raw=true" onerror="this.onerror=null;this.src='https://placehold.co/1200x400/f0f0f0/333333?text=Placeholder';" alt="Изображение проекта на Ren'Py" class="w-full h-full object-cover">
+                        <div class="portfolio-card-overlay text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">My GitHub Profile</h3>
+                            <a href="https://github.com/OOUPSS/OOUPSS" target="_blank" rel="noopener noreferrer" class="text-white text-lg mt-4 transition-transform hover:scale-110">
+                                <i class="fab fa-github fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция "Контакты" -->
+        <section id="contact" class="bg-[var(--bg-light)] py-24">
+            <div class="container mx-auto text-center p-4 md:p-8">
+                <h2 class="text-5xl font-black mb-16 professional-text-glow">Contact Me</h2>
+                <p class="text-lg text-[var(--text-dark)] max-w-2xl mx-auto mb-8">
+                    I am ready for new projects and collaborations. Contact me to discuss your ideas.
+                </p>
+                <div class="relative inline-block">
+                    <button id="copy-email-btn" class="copy-btn">
+                        <span id="email-text">ooupsstech@gmail.com</span>
+                    </button>
+                    <div id="copy-message" class="absolute -top-12 left-1/2 -translate-x-1/2 p-2 bg-green-600 text-white rounded-lg shadow-xl opacity-0 transition-opacity duration-300">
+                        E-mail скопирован!
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--bg-light)] text-center text-[var(--text-dark)] p-8">
+        <p>Developed with the best practices and technologies in mind. © 2025 Yaromyr Landar. All rights reserved.</p>
+        <div class="flex justify-center items-center space-x-6 mt-4">
+            <a href="https://github.com/OOUPSS" target="_blank" rel="noopener noreferrer" class="text-2xl text-[var(--text-dark)] hover:text-[var(--accent-main)] transition-colors" aria-label="GitHub Profile">
+                <i class="fab fa-github"></i>
+            </a>
+            <div class="flex items-center space-x-2">
+                <i class="fab fa-discord text-2xl"></i>
+                <span class="text-lg font-medium">oouuppss</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Инициализация фона с "Воксельной поверхностью"
+        function initThreeJSBackground() {
+            const canvas = document.getElementById('hero-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+            camera.position.y = 5;
+            camera.rotation.x = -Math.PI / 8; // Небольшой наклон, чтобы показать 3D-эффект
+
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Параметры сетки вокселей
+            const gridSize = 80;
+            const voxelSize = 0.5;
+            const spacing = 0.6;
+            const voxelCount = gridSize * gridSize;
+
+            // Используем InstancedMesh для оптимизации
+            const geometry = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x333333, // Обновлено на темно-серый цвет
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending
+            });
+            const instancedMesh = new THREE.InstancedMesh(geometry, material, voxelCount);
+            scene.add(instancedMesh);
+
+            // Храним позиции и матрицы трансформации вокселей
+            const dummy = new THREE.Object3D();
+            const voxels = [];
+
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const x = (i - gridSize / 2) * spacing;
+                    const z = (j - gridSize / 2) * spacing;
+                    
+                    dummy.position.set(x, 0, z);
+                    dummy.scale.set(1, 1, 1);
+                    dummy.updateMatrix();
+                    instancedMesh.setMatrixAt(i * gridSize + j, dummy.matrix);
+
+                    voxels.push({
+                        x: x,
+                        z: z,
+                        y: 0,
+                        velocity: 0,
+                        baseY: 0
+                    });
+                }
+            }
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            
+            // Задаем легкое освещение
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // Обработка движения мыши
+            const mouse = new THREE.Vector2();
+            const raycaster = new THREE.Raycaster();
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const intersectionPoint = new THREE.Vector3();
+
+            document.addEventListener('mousemove', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+            
+            // Основной цикл анимации
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Плавное вращение камеры для эффекта движения
+                camera.position.x = Math.sin(Date.now() * 0.0001) * 2;
+                camera.position.z = Math.cos(Date.now() * 0.0001) * 2 + 5;
+                camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+                // Обновляем луч для пересечения с плоскостью
+                raycaster.setFromCamera(mouse, camera);
+                raycaster.ray.intersectPlane(plane, intersectionPoint);
+
+                // Обновляем позицию каждого вокселя
+                voxels.forEach((voxel, index) => {
+                    const distanceToMouse = new THREE.Vector3(voxel.x, 0, voxel.z).distanceTo(intersectionPoint);
+                    
+                    let targetY = voxel.baseY;
+                    if (distanceToMouse < 4) {
+                        // Создаем эффект "ряби" на поверхности
+                        const height = Math.cos(distanceToMouse / 2.5 * Math.PI) * 1.5;
+                        targetY = Math.max(voxel.baseY, height);
+                    }
+
+                    // Плавное движение вокселя к целевой высоте
+                    voxel.y += (targetY - voxel.y) * 0.1;
+                    
+                    // Обновляем матрицу трансформации вокселя
+                    dummy.position.set(voxel.x, voxel.y, voxel.z);
+                    dummy.updateMatrix();
+                    instancedMesh.setMatrixAt(index, dummy.matrix);
+                });
+
+                instancedMesh.instanceMatrix.needsUpdate = true;
+                instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            });
+        }
+
+        // Инициализация Typewriter-js (с жестко заданным русским текстом)
+        function initTypewriter() {
+            const typewriter = new Typewriter(document.getElementById('typewriter-text'), {
+                loop: true,
+                delay: 75,
+            });
+
+            typewriter.typeString('<span class="text-[var(--accent-main)] font-semibold">Python Backend Developer</span>, создающий высокотехнологичные решения.')
+                .pauseFor(2000)
+                .deleteAll()
+                .typeString('Специалист в разработке <span class="text-[var(--accent-main)] font-semibold">API, облачных систем и интеграции AI.</span>')
+                .pauseFor(2000)
+                .deleteAll()
+                .typeString('Эксперт по <span class="text-[var(--accent-main)] font-semibold">кибербезопасности и кроссплатформенной разработке.</span>')
+                .pauseFor(2000)
+                .deleteAll()
+                .start();
+        }
+
+        // Анимация при загрузке страницы
+        function introAnimation() {
+            gsap.fromTo('header', { y: -100, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: 'power2.out' });
+
+            gsap.fromTo('#hero-title', { opacity: 0, y: 30 }, {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power3.out',
+                delay: 1
+            });
+            
+            gsap.to('#preloader', {
+                opacity: 0,
+                duration: 1.5,
+                delay: 2.5,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    document.getElementById('preloader').style.display = 'none';
+                    // Запускаем Typewriter без передачи языка
+                    initTypewriter();
+                }
+            });
+        }
+
+        // Анимация элементов при скролле
+        function setupScrollAnimations() {
+            gsap.utils.toArray(".card-animation-target").forEach(element => {
+                gsap.fromTo(element, { opacity: 0, y: 50, scale: 0.9 }, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: element,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    }
+                });
+            });
+        }
+
+        // Обработчик для кнопки копирования email
+        function setupEmailCopy() {
+            const emailBtn = document.getElementById('copy-email-btn');
+            const emailText = document.getElementById('email-text').innerText;
+            const copyMessage = document.getElementById('copy-message');
+
+            emailBtn.addEventListener('click', async () => {
+                try {
+                    // Используем document.execCommand для совместимости с iframe
+                    const textarea = document.createElement('textarea');
+                    textarea.value = emailText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    // Показываем сообщение о копировании
+                    copyMessage.textContent = 'E-mail скопирован!';
+                    gsap.to(copyMessage, { opacity: 1, duration: 0.3, y: -10 });
+                    gsap.to(copyMessage, { opacity: 0, duration: 0.5, y: 0, delay: 2 });
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            });
+        }
+
+        // Запуск всех функций после загрузки страницы
+        window.onload = () => {
+            // Регистрация плагинов GSAP
+            gsap.registerPlugin(ScrollTrigger);
+
+            initThreeJSBackground();
+            introAnimation();
+            setupScrollAnimations();
+            setupEmailCopy();
+            
+            // Обработчики для кнопок языка больше не нужны, так как это теперь ссылки <a>
+        };
+    </script>
+</body>
+</html>
